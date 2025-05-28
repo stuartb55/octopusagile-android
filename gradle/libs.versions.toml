@@ -1,7 +1,7 @@
 [versions]
 activityCompose = "1.10.1"
 agp = "8.10.0"
-converterMoshi = "2.12.0"
+converterMoshi = "3.0.0"
 gson = "2.13.1"
 kotlin = "2.1.21"
 coreKtx = "1.16.0"
@@ -23,7 +23,7 @@ navigationTesting = "2.9.0"
 navigationUi = "2.9.0"
 navigationUiKtxVersion = "2.9.0"
 okhttp = "4.12.0"
-retrofit = "2.12.0"
+retrofit = "3.0.0"
 fragmentKtx = "1.8.7"
 
 [libraries]
