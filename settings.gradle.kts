@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Octopus Agile"
+rootProject.name = "Octopus Agile Prices"
 include(":app")

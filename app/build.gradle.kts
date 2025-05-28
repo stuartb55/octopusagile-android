@@ -49,7 +49,7 @@ kotlin {
 dependencies {
     // === Use ONLY ONE Compose BOM ===
     // Choose a stable, recent BOM version. Example:
-    implementation(platform("androidx.compose:compose-bom:2025.05.01")) // Example: REPLACE with your chosen STABLE BOM
+    implementation(platform("androidx.compose:compose-bom:2025.05.01"))
 
     // Core Android KTX (ensure aliases point to correct versions)
     implementation(libs.androidx.core.ktx) // This should be the main one

@@ -6,14 +6,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// Replace with your own custom fonts if desired, or use system defaults.
-// Example for adding custom fonts (place font files in res/font directory):
-// val SansSerif = FontFamily(
-//    Font(R.font.sans_serif_regular, FontWeight.Normal),
-//    Font(R.font.sans_serif_medium, FontWeight.Medium),
-//    Font(R.font.sans_serif_bold, FontWeight.Bold)
-// )
-
 // Default Material 3 Typography
 val Typography = Typography(
     bodyLarge = TextStyle(
