@@ -94,6 +94,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
+    implementation(libs.gson)
 
     // Java language implementation
     implementation(libs.androidx.navigation.fragment)

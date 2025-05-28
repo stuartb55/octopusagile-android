@@ -8,7 +8,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 object RetrofitInstance {
-    private const val BASE_URL = "https://api.octopus.energy/v1/"
+    private const val BASE_URL = "https://api.octopus.energy/"
 
     private val moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
