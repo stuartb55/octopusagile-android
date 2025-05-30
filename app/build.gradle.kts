@@ -6,13 +6,12 @@ plugins {
 
 android {
     namespace = "com.stuartb55.octopusagile"
-    compileSdk = 35 // Consider using a stable SDK like 34 unless you need 35 features
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.stuartb55.octopusagile"
-        minSdk =
-            26 // Consider a lower minSdk for wider compatibility, e.g., 24 or 26, unless 33 is required
-        targetSdk = 35 // Match compileSdk
+        minSdk = 33
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -47,9 +46,7 @@ kotlin {
 }
 
 dependencies {
-    // === Use ONLY ONE Compose BOM ===
-    // Choose a stable, recent BOM version. Example:
-    implementation(platform("androidx.compose:compose-bom:2025.05.01"))
+    implementation(platform(libs.androidx.compose.bom))
 
     // Core Android KTX (ensure aliases point to correct versions)
     implementation(libs.androidx.core.ktx) // This should be the main one
