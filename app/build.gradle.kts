@@ -82,14 +82,6 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.constraintlayout)
 
-    // Lifecycle (for non-Compose ViewModel/LiveData, if used)
-    // implementation(libs.androidx.lifecycle.livedata.ktx)
-    // implementation(libs.androidx.lifecycle.viewmodel.ktx)
-
-    // Navigation (for non-Compose Navigation, if used)
-    // implementation(libs.androidx.navigation.fragment.ktx)
-    // implementation(libs.androidx.navigation.ui.ktx)
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -112,4 +104,5 @@ dependencies {
 
     // Jetpack Compose Integration
     implementation(libs.androidx.navigation.compose)
+
 }

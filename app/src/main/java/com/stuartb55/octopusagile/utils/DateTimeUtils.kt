@@ -1,10 +1,13 @@
 package com.stuartb55.octopusagile.utils
 
 import android.util.Log
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import java.time.format.FormatStyle
+import java.util.Locale
 
 private const val TAG = "DateTimeUtils"
 
@@ -64,4 +67,9 @@ fun formatDateAndTimeForDisplay(
         Log.e(TAG, "Error formatting date-time string: $dateTimeStringUtc", e)
         "Invalid Date"
     }
+}
+
+fun formatDateForHeader(date: LocalDate): String {
+    // Example: "Monday, 29 May 2025"
+    return date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(Locale.UK))
 }

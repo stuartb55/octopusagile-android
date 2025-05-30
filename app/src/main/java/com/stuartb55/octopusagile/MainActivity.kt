@@ -5,23 +5,30 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.BorderStroke // Added for Card border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -36,22 +43,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
-import java.util.Locale
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-
 import com.stuartb55.octopusagile.data.EnergyRate
 import com.stuartb55.octopusagile.ui.EnergyRatesViewModel
 import com.stuartb55.octopusagile.ui.UiState
 import com.stuartb55.octopusagile.ui.theme.OctopusEnergyRatesTheme
 import com.stuartb55.octopusagile.utils.formatDateAndTimeForDisplay
+import com.stuartb55.octopusagile.utils.formatDateForHeader
 import com.stuartb55.octopusagile.utils.formatTimeForDisplay
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import java.time.LocalDate
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.util.Locale
 
 
-// Color definitions (remains the same)
+// Color definitions
 private val RateColorBlue = Color(0xFF1976D2)
 private val RateColorGreen = Color(0xFF388E3C)
 private val RateColorAmber = Color(0xFFFFA000)
@@ -96,59 +106,83 @@ fun LivePriceSummaryCard(
             Text(
                 "Live Price Information",
                 style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(bottom = 12.dp)
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            Text("Current Price:", style = MaterialTheme.typography.titleMedium)
-            if (currentRate != null) {
-                Text(
-                    "${String.format(Locale.UK, "%.2f", currentRate.valueIncVat)} p/kWh (until ${
-                        formatTimeForDisplay(
-                            currentRate.validTo
-                        )
-                    })",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            } else {
-                Text("Data unavailable", style = MaterialTheme.typography.bodyLarge)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
+            PriceInfoRow(
+                icon = Icons.Filled.Check,
+                iconDesc = "Current Price",
+                label = "Current Price:",
+                rate = currentRate,
+                rateSuffix = { rate -> " (until ${formatTimeForDisplay(rate.validTo)})" }
+            )
 
-            Text("Next Price:", style = MaterialTheme.typography.titleMedium)
-            if (nextRate != null) {
-                Text(
-                    "${String.format(Locale.UK, "%.2f", nextRate.valueIncVat)} p/kWh (from ${
-                        formatTimeForDisplay(
-                            nextRate.validFrom
-                        )
-                    })",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            } else {
-                Text("Data unavailable", style = MaterialTheme.typography.bodyLarge)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = 1.dp,
+                color = Color.DarkGray
+            )
 
-            Text("Lowest (next 24h):", style = MaterialTheme.typography.titleMedium)
-            if (lowestRateNext24h != null) {
-                Text(
-                    "${
-                        String.format(
-                            Locale.UK,
-                            "%.2f",
-                            lowestRateNext24h.valueIncVat
-                        )
-                    } p/kWh (starts ${
-                        formatTimeForDisplay(lowestRateNext24h.validFrom)
-                    })",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            } else {
-                Text(
-                    "Data unavailable or no future rates loaded",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
+            PriceInfoRow(
+                icon = Icons.Filled.PlayArrow,
+                iconDesc = "Next Price",
+                label = "Next Price:",
+                rate = nextRate,
+                rateSuffix = { rate -> " (from ${formatTimeForDisplay(rate.validFrom)})" }
+            )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = 1.dp,
+                color = Color.DarkGray
+            )
+
+            PriceInfoRow(
+                icon = Icons.Filled.KeyboardArrowDown,
+                iconDesc = "Lowest Next 24h",
+                label = "Lowest (next 24h):",
+                rate = lowestRateNext24h,
+                rateSuffix = { rate -> " (starts ${formatTimeForDisplay(rate.validFrom)})" },
+                unavailableText = "Data unavailable or no future rates loaded"
+            )
+        }
+    }
+}
+
+@Composable
+private fun PriceInfoRow(
+    icon: ImageVector,
+    iconDesc: String,
+    label: String,
+    rate: EnergyRate?,
+    rateSuffix: (EnergyRate) -> String,
+    unavailableText: String = "Data unavailable"
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = icon,
+                contentDescription = iconDesc,
+                modifier = Modifier.padding(end = 8.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Text(label, style = MaterialTheme.typography.bodyMedium)
+        }
+        Spacer(Modifier.width(8.dp))
+        if (rate != null) {
+            Text(
+                text = "${String.format(Locale.UK, "%.2f", rate.valueIncVat)} p/kWh" + rateSuffix(
+                    rate
+                ),
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            Text(unavailableText, style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
@@ -159,7 +193,6 @@ fun EnergyRatesScreen(viewModel: EnergyRatesViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
 
-    // State for current time, updates periodically to refresh current rate identification
     var currentTime by remember { mutableStateOf(OffsetDateTime.now(ZoneOffset.UTC)) }
 
     LaunchedEffect(Unit) {
@@ -256,9 +289,15 @@ fun EnergyRatesScreen(viewModel: EnergyRatesViewModel) {
                     )
 
                     if (rates.isNotEmpty()) {
-                        LaunchedEffect(rates, listState) {
+                        LaunchedEffect(
+                            rates,
+                            listState,
+                            currentActualRate
+                        ) { // Added currentActualRate to re-trigger on change
                             val nowForScroll = OffsetDateTime.now(ZoneOffset.UTC)
                             val currentIndex = rates.indexOfFirst { rate ->
+                                rate == currentActualRate // More direct check if currentActualRate is from the list
+                            }.takeIf { it != -1 } ?: rates.indexOfFirst { rate ->
                                 try {
                                     val from = OffsetDateTime.parse(rate.validFrom)
                                     val to = OffsetDateTime.parse(rate.validTo)
@@ -267,8 +306,9 @@ fun EnergyRatesScreen(viewModel: EnergyRatesViewModel) {
                                     false
                                 }
                             }
+
                             if (currentIndex != -1) {
-                                listState.scrollToItem(currentIndex)
+                                listState.animateScrollToItem(currentIndex) // Consider animateScrollToItem
                             } else {
                                 val futureIndex = rates.indexOfFirst {
                                     try {
@@ -277,28 +317,70 @@ fun EnergyRatesScreen(viewModel: EnergyRatesViewModel) {
                                         false
                                     }
                                 }
-                                if (futureIndex != -1) listState.scrollToItem(futureIndex)
+                                if (futureIndex != -1) listState.animateScrollToItem(futureIndex)
                             }
                         }
 
                         LazyColumn(
                             state = listState,
                             modifier = Modifier.weight(1f),
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            contentPadding = PaddingValues(vertical = 8.dp), // Horizontal padding managed by items
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             itemsIndexed(
                                 items = rates,
                                 key = { _, rate -> rate.validFrom }
-                            ) { _, itemRate ->
-                                EnergyRateItem(
-                                    rate = itemRate,
-                                    isCurrent = itemRate == currentActualRate
-                                )
+                            ) { index, itemRate ->
+                                val currentItemLocalDate = try {
+                                    OffsetDateTime.parse(itemRate.validFrom).toLocalDate()
+                                } catch (e: Exception) {
+                                    Log.e(
+                                        "DateHeaderParse",
+                                        "Error parsing date for header: ${itemRate.validFrom}",
+                                        e
+                                    )
+                                    null
+                                }
+
+                                var showHeader = false
+                                if (currentItemLocalDate != null) {
+                                    if (index == 0) {
+                                        showHeader = true
+                                    } else {
+                                        rates.getOrNull(index - 1)?.let { previousItemRate ->
+                                            try {
+                                                val previousItemLocalDate =
+                                                    OffsetDateTime.parse(previousItemRate.validFrom)
+                                                        .toLocalDate()
+                                                if (currentItemLocalDate != previousItemLocalDate) {
+                                                    showHeader = true
+                                                }
+                                            } catch (e: Exception) {
+                                                Log.e(
+                                                    "DateHeaderParse",
+                                                    "Error parsing prev date for header: ${previousItemRate.validFrom}",
+                                                    e
+                                                )
+                                                showHeader = true // Fallback
+                                            }
+                                        } ?: run { showHeader = true }
+                                    }
+                                }
+
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    if (showHeader && currentItemLocalDate != null) {
+                                        DateHeader(date = currentItemLocalDate)
+                                    }
+                                    EnergyRateItem(
+                                        rate = itemRate,
+                                        isCurrent = itemRate == currentActualRate,
+                                        modifier = Modifier.padding(horizontal = 16.dp) // Apply horizontal padding here
+                                    )
+                                }
                             }
                         }
 
-                        // Pagination logic remains the same
+                        // Pagination logic
                         val buffer = 7
                         val loadOlderTrigger by remember {
                             derivedStateOf {
@@ -357,30 +439,47 @@ fun EnergyRatesScreen(viewModel: EnergyRatesViewModel) {
 }
 
 @Composable
-fun EnergyRateItem(rate: EnergyRate, isCurrent: Boolean) {
+fun DateHeader(date: LocalDate) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp), // Consistent with item padding
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = formatDateForHeader(date),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(start = 0.dp) // Was 8.dp, setting to 0 as card will have padding
+        )
+    }
+}
+
+@Composable
+fun EnergyRateItem(rate: EnergyRate, isCurrent: Boolean, modifier: Modifier = Modifier) {
     val (containerColor, contentColor) = getRateStyling(rate.valueIncVat)
 
-    // Define dynamic styling based on whether the item is current
-    val cardElevation = if (isCurrent) 8.dp else 2.dp // Slightly higher elevation for current item
+    val cardElevation = if (isCurrent) 8.dp else 2.dp
     val borderStroke = if (isCurrent) {
-        BorderStroke(4.dp, MaterialTheme.colorScheme.primary) // Highlight border for current item
+        BorderStroke(4.dp, MaterialTheme.colorScheme.primaryContainer) // Using primaryContainer
     } else {
         null
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(), // Applied passed modifier
         elevation = CardDefaults.cardElevation(defaultElevation = cardElevation),
         colors = CardDefaults.cardColors(
             containerColor = containerColor,
             contentColor = contentColor
         ),
-        border = borderStroke // Apply the conditional border
+        border = borderStroke
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) { // This padding is inside the card
             Text(
                 text = "Rate: ${String.format(Locale.UK, "%.2f", rate.valueIncVat)} p/kWh",
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal
             )
             Text(
                 text = "Valid: ${formatDateAndTimeForDisplay(rate.validFrom)} - ${
@@ -393,9 +492,10 @@ fun EnergyRateItem(rate: EnergyRate, isCurrent: Boolean) {
             if (isCurrent) {
                 Text(
                     "Current Slot",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = contentColor.copy(alpha = 0.7f),
-                    modifier = Modifier.padding(top = 4.dp)
+                    style = MaterialTheme.typography.labelMedium, // Increased size
+                    fontWeight = FontWeight.Bold, // Added bold
+                    color = contentColor, // Use full contentColor (no alpha)
+                    modifier = Modifier.padding(top = 6.dp) // Adjusted padding
                 )
             }
         }

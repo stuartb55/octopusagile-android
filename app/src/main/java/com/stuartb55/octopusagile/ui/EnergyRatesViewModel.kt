@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.Response // Ensure this is the correct Response import
+import retrofit2.Response
 import java.io.IOException
 import java.time.OffsetDateTime
 import java.time.format.DateTimeParseException
@@ -30,10 +30,7 @@ class EnergyRatesViewModel : ViewModel() {
 
     private val TAG = "EnergyRatesViewModel"
 
-    // Stores all fetched rates, sorted chronologically (ascending validFrom)
     private val allFetchedRates = TreeSet<EnergyRate>(
-        // Primary sort by validFrom (parsed as OffsetDateTime for correctness)
-        // Secondary sort by valueIncVat as a tie-breaker if dates were identical or unparseable
         compareBy<EnergyRate> {
             try {
                 OffsetDateTime.parse(it.validFrom)
@@ -49,6 +46,7 @@ class EnergyRatesViewModel : ViewModel() {
 
     @Volatile
     private var isLoadingOlder = false
+
     @Volatile
     private var isLoadingNewer = false
 
@@ -57,21 +55,21 @@ class EnergyRatesViewModel : ViewModel() {
     }
 
     fun initialLoad() {
-        if (_uiState.value is UiState.Loading && allFetchedRates.isNotEmpty()) { // Fix: prevent reload if already loaded by checking allFetchedRates
+        if (_uiState.value is UiState.Loading && allFetchedRates.isNotEmpty()) {
             Log.d(TAG, "Initial load skipped: already have data or currently loading.")
-            _uiState.value = UiState.Success(allFetchedRates.toList()) // Emit current data if any
+            _uiState.value = UiState.Success(allFetchedRates.toList())
             return
         }
-        if (_uiState.value is UiState.Loading && allFetchedRates.isEmpty()) { // If stuck in loading without data
+        if (_uiState.value is UiState.Loading && allFetchedRates.isEmpty()) {
             Log.d(TAG, "Initial load: was stuck in loading, retrying.")
-        } else if (_uiState.value is UiState.Loading) { // General loading state
+        } else if (_uiState.value is UiState.Loading) {
             Log.d(TAG, "Initial load skipped: already loading.")
             return
         }
 
         Log.d(TAG, "Initial load triggered")
         fetchRates(
-            fetchUrl = null, // Let fetchRates use the default endpoint
+            fetchUrl = null,
             isInitialLoad = true
         )
     }
@@ -110,7 +108,6 @@ class EnergyRatesViewModel : ViewModel() {
             }
 
             try {
-                // Simplified response assignment using if/else
                 val response: Response<EnergyRatesResponse>
                 if (fetchUrl != null) {
                     Log.d(TAG, "Fetching by full URL: $fetchUrl")
@@ -139,21 +136,18 @@ class EnergyRatesViewModel : ViewModel() {
                             urlToFetchOlder = ratesResponse.next
                             urlToFetchNewer = ratesResponse.previous
                         } else if (isLoadingOlderData) {
-                            // Only update urlToFetchOlder if the response for older data provides a 'next' for even older data
                             urlToFetchOlder = ratesResponse.next
                         } else if (isLoadingNewerData) {
-                            // Only update urlToFetchNewer if the response for newer data provides a 'previous' for even newer data
                             urlToFetchNewer = ratesResponse.previous
                         }
 
                         _uiState.value =
-                            UiState.Success(allFetchedRates.toList()) // TreeSet ensures it's sorted
+                            UiState.Success(allFetchedRates.toList())
 
                     } ?: run {
                         Log.e(TAG, "Empty response body for URL: $fetchUrl")
                         if (isInitialLoad) _uiState.value =
                             UiState.Error("Empty response from server.")
-                        // For paginated loads, you might want a less disruptive error, or just log it.
                     }
                 } else {
                     Log.e(
@@ -162,7 +156,6 @@ class EnergyRatesViewModel : ViewModel() {
                     )
                     if (isInitialLoad) _uiState.value =
                         UiState.Error("API Error: ${response.code()}")
-                    // Handle errors for paginated loads (e.g., show a toast, log, or ignore if minor)
                 }
             } catch (e: IOException) {
                 Log.e(TAG, "Network error for URL: $fetchUrl", e)
