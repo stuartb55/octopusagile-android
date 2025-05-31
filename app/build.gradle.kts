@@ -102,4 +102,5 @@ dependencies {
     // Jetpack Compose Integration
     implementation(libs.androidx.navigation.compose)
 
+    implementation(libs.androidx.work.runtime.ktx) // Add this for WorkManager
 }

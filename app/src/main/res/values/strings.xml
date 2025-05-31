@@ -3,5 +3,5 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
-    <string name="widget_description">Displays live Octopus Agile prices.</string>
+    <string name="live_price_widget_description">Displays live Octopus Agile energy prices.</string>
 </resources>
