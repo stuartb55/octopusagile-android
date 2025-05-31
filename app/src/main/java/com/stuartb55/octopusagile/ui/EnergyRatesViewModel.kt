@@ -16,7 +16,6 @@ import java.time.OffsetDateTime
 import java.time.format.DateTimeParseException
 import java.util.TreeSet
 
-// UiState remains the same
 sealed class UiState<out T> {
     object Loading : UiState<Nothing>()
     data class Success<T>(val data: T) : UiState<T>()
@@ -36,7 +35,7 @@ class EnergyRatesViewModel : ViewModel() {
                 OffsetDateTime.parse(it.validFrom)
             } catch (e: DateTimeParseException) {
                 Log.w(TAG, "Could not parse validFrom for sorting: ${it.validFrom}", e)
-                null // Treat unparseable dates to sort them consistently (e.g., at the end or beginning)
+                null
             }
         }.thenBy { it.valueIncVat }
     )

@@ -6,18 +6,16 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.util.Log
 import android.widget.RemoteViews
 import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.stuartb55.octopusagile.MainActivity
 import com.stuartb55.octopusagile.R
 import com.stuartb55.octopusagile.utils.formatTimeForDisplay
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 
 class LivePriceInfoWidgetProvider : AppWidgetProvider() {
 
@@ -26,36 +24,29 @@ class LivePriceInfoWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-        enqueueOneTimeUpdateWork(context)
+        Log.d("WidgetProvider", "onUpdate called. Enqueuing one-time work for initial update if necessary.")
+        // Enqueue work for all widget instances
+        appWidgetIds.forEach { appWidgetId ->
+            enqueueOneTimeUpdateWork(context) // Update each widget instance
+        }
     }
 
     override fun onEnabled(context: Context) {
         super.onEnabled(context)
-        schedulePeriodicUpdates(context)
-        enqueueOneTimeUpdateWork(context)
+        Log.d("WidgetProvider", "onEnabled: Scheduling first alarm and an immediate update.")
+        // Schedule the first alarm
+        AlarmScheduler.scheduleNextAlarm(context.applicationContext)
+        // Perform an immediate update when the first widget is added
+        enqueueOneTimeUpdateWork(context.applicationContext)
     }
 
     override fun onDisabled(context: Context) {
         super.onDisabled(context)
-        WorkManager.getInstance(context).cancelUniqueWork(PERIODIC_WORK_NAME)
-    }
-
-    private fun schedulePeriodicUpdates(context: Context) {
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-
-        val periodicWorkRequest = PeriodicWorkRequestBuilder<UpdateWidgetWorker>(
-            30, TimeUnit.MINUTES
-        )
-            .setConstraints(constraints)
-            .build()
-
-        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-            PERIODIC_WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
-            periodicWorkRequest
-        )
+        Log.d("WidgetProvider", "onDisabled: Cancelling alarms.")
+        // Cancel alarms when the last widget is removed
+        AlarmScheduler.cancelAlarm(context.applicationContext)
+        // Optionally, cancel any ongoing WorkManager tasks if they are specific to the widget
+        WorkManager.getInstance(context.applicationContext).cancelUniqueWork(PERIODIC_WORK_NAME) // Keep this if you still use this name for one-time work
     }
 
     private fun enqueueOneTimeUpdateWork(context: Context) {
@@ -121,7 +112,7 @@ class LivePriceInfoWidgetProvider : AppWidgetProvider() {
             val mainActivityIntent = Intent(context, MainActivity::class.java)
             val pendingMainActivityIntent = PendingIntent.getActivity(
                 context,
-                appWidgetId,
+                appWidgetId, // Use appWidgetId as request code for uniqueness if needed
                 mainActivityIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
