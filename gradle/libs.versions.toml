@@ -26,7 +26,7 @@ navigationUiKtxVersion = "2.9.5"
 okhttp = "5.1.0"
 retrofit = "3.0.0"
 fragmentKtx = "1.8.9"
-workRuntimeKtx = "2.10.4"
+workRuntimeKtx = "2.10.5"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
