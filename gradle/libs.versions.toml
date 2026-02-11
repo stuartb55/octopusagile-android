@@ -1,5 +1,5 @@
 [versions]
-activityCompose = "1.12.3"
+activityCompose = "1.12.4"
 agp = "8.13.2"
 composeBom = "2025.09.00"
 converterMoshi = "3.0.0"
